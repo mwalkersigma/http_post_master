@@ -1,0 +1,10 @@
+CREATE SCHEMA IF NOT EXISTS sync;
+-- CREATE TYPE channel_type AS ENUM ('public', 'private');
+
+CREATE TABLE sync.channels
+(
+    id         uuid PRIMARY KEY default gen_random_uuid(),
+    created_at timestamptz      DEFAULT NOW(),
+    name       text UNIQUE,
+    type       channel_type NOT NULL
+);
