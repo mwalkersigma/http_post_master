@@ -5,6 +5,8 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import {Server} from "socket.io";
 import {createAdapter} from "@socket.io/postgres-adapter";
+
+const {instrument} = require("@socket.io/admin-ui");
 import {logger} from "./src/logger.js";
 import {format, transports} from "winston";
 import dotenv from "dotenv";
@@ -37,9 +39,9 @@ const config = {
         options: "-c search_path=sync",
     },
     cors: {
-            origin: "*",
-            methods: ["GET", "POST"],
-            allowedHeaders: ["Content-Type"],
+        origin: "*",
+        methods: ["GET", "POST"],
+        allowedHeaders: ["Content-Type"],
     }
 }
 
@@ -55,8 +57,16 @@ const io = new Server(httpServer, {
     adapter: createAdapter(pgPool),
 });
 
+instrument(io, {
+    auth: {
+        type: "basic",
+        username: process.env.ADMIN_USER,
+        password: process.env.ADMIN_PASS,
+    },
+    mode: process.env.ENVIROMENT,
+});
 
-function InitSocketHandlers ( ioServer ) {
+function InitSocketHandlers(ioServer) {
     ioServer.on("connection", (socket) => {
         socket.on("message", (payload, callback) => {
             logger.info("message received: %o", payload);
@@ -71,9 +81,7 @@ function InitSocketHandlers ( ioServer ) {
 }
 
 
-
 InitSocketHandlers(io);
-
 
 
 async function close() {
@@ -89,6 +97,6 @@ process.on("SIGTERM", async () => {
     await close();
 });
 
-httpServer.listen(process.env.PORT, process.env.HOST,() => {
-    logger.info(`server listening on ${process.env.HOST}${process.env.PORT}`);
+httpServer.listen(process.env.PORT, process.env.HOST, () => {
+    logger.info(`server listening on ${process.env.HOST}:${process.env.PORT}`);
 });
