@@ -89,6 +89,6 @@ process.on("SIGTERM", async () => {
     await close();
 });
 
-httpServer.listen(process.env.PORT, () => {
-    logger.info("server listening at http://localhost:3000");
+httpServer.listen(process.env.PORT, process.env.HOST,() => {
+    logger.info(`server listening on ${process.env.HOST}${process.env.PORT}`);
 });
