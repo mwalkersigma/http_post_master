@@ -21,8 +21,8 @@ logger.add(
 function createExpressApp(config) {
     const app = express();
 
-    // app.set("etag", false);
-    // app.set("x-powered-by", false);
+    app.set("etag", false);
+    app.set("x-powered-by", false);
 
     app.use(bodyParser.json());
     app.use(cors(config));
@@ -89,6 +89,6 @@ process.on("SIGTERM", async () => {
     await close();
 });
 
-httpServer.listen(3000, () => {
+httpServer.listen(process.env.PORT, () => {
     logger.info("server listening at http://localhost:3000");
 });
