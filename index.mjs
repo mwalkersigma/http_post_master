@@ -5,11 +5,17 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import {Server} from "socket.io";
 import {createAdapter} from "@socket.io/postgres-adapter";
-
-const {instrument} = require("@socket.io/admin-ui");
-import {logger} from "./src/logger.js";
+import {instrument} from "@socket.io/admin-ui";
+import {logger} from "./src/logger.mjs";
 import {format, transports} from "winston";
 import dotenv from "dotenv";
+
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import * as path from "node:path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 dotenv.config();
 
@@ -49,6 +55,10 @@ const pgPool = new pg.Pool(config.postgres);
 
 const httpServer = createServer();
 const app = createExpressApp(config.cors);
+app.use(express.static(path.join(__dirname, "dist")));
+app.get("/___admin", (req, res) => {
+    res.sendFile(path.join(__dirname, "dist", "index.html"));
+});
 
 httpServer.on("request", app);
 
@@ -58,12 +68,7 @@ const io = new Server(httpServer, {
 });
 
 instrument(io, {
-    auth: {
-        type: "basic",
-        username: process.env.ADMIN_USER,
-        password: process.env.ADMIN_PASS,
-    },
-    mode: process.env.ENVIROMENT,
+    auth: false,
 });
 
 function InitSocketHandlers(ioServer) {
